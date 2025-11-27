@@ -1,4 +1,10 @@
-# Packer 版本要求
+# ===================================================================
+# Packer Configuration for CSYE6225 Web Application AMI
+# ===================================================================
+
+# ===================================================================
+# Required Plugins
+# ===================================================================
 packer {
   required_plugins {
     amazon = {
@@ -8,7 +14,9 @@ packer {
   }
 }
 
-# 資料來源：查找最新的 Ubuntu 24.04 LTS AMI
+# ===================================================================
+# Data Source: Find Latest Ubuntu 24.04 LTS AMI
+# ===================================================================
 data "amazon-ami" "ubuntu" {
   filters = {
     name                = "ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-*"
@@ -16,27 +24,27 @@ data "amazon-ami" "ubuntu" {
     virtualization-type = "hvm"
   }
   most_recent = true
-  owners      = ["099720109477"] # Canonical 官方 Account ID
+  owners      = ["099720109477"] # Canonical Official Account ID
   region      = var.aws_region
 }
 
-# Source 定義：如何建立臨時 EC2 instance
+# ===================================================================
+# Source Configuration: EC2 Instance for AMI Creation
+# ===================================================================
 source "amazon-ebs" "webapp" {
-  # AMI 設定
+  # AMI Configuration
   ami_name        = "${var.ami_name_prefix}-${formatdate("YYYY-MM-DD-hhmm", timestamp())}"
   ami_description = "AMI for CSYE6225 Web Application"
-  ami_users       = [var.demo_account_id] # 自動分享到 DEMO 帳號
+  ami_users       = [var.demo_account_id]
+  ami_regions     = [var.aws_region]
 
-  # Instance 設定
+  # Instance Configuration
   instance_type = var.instance_type
   region        = var.aws_region
   source_ami    = data.amazon-ami.ubuntu.id
   ssh_username  = var.ssh_username
 
-  # AMI 啟動權限設定
-  ami_regions = [var.aws_region]
-
-  # EBS Volume 設定 （Elastic Block Store 一種高性能、持久性的區塊儲存 (Block Storage) 服務）
+  # EBS Volume Configuration
   launch_block_device_mappings {
     device_name           = "/dev/sda1"
     volume_size           = 8
@@ -52,11 +60,15 @@ source "amazon-ebs" "webapp" {
   }
 }
 
-# Build 定義：執行安裝和配置步驟
+# ===================================================================
+# Build Configuration: Provisioning Steps
+# ===================================================================
 build {
   sources = ["source.amazon-ebs.webapp"]
 
-  # 1. 更新系統套件
+  # ===================================================================
+  # Step 1: Update System Packages
+  # ===================================================================
   provisioner "shell" {
     inline = [
       "echo 'Waiting for cloud-init to complete...'",
@@ -67,7 +79,9 @@ build {
     ]
   }
 
-  # 2. 安裝必要軟體
+  # ===================================================================
+  # Step 2: Install Required Software
+  # ===================================================================
   provisioner "shell" {
     inline = [
       "echo 'Installing Java 21...'",
@@ -77,7 +91,9 @@ build {
     ]
   }
 
-  # 3. 建立應用程式使用者和群組
+  # ===================================================================
+  # Step 3: Create Application User and Group
+  # ===================================================================
   provisioner "shell" {
     inline = [
       "echo 'Creating csye6225 user and group...'",
@@ -89,19 +105,27 @@ build {
     ]
   }
 
-  # 4. 複製應用程式 JAR 檔案
+  # ===================================================================
+  # Step 4: Upload Application Files
+  # ===================================================================
   provisioner "file" {
     source      = "../target/webapp-0.0.1-SNAPSHOT.jar"
     destination = "/tmp/webapp.jar"
   }
 
-  # 5. 複製 systemd service 檔案
   provisioner "file" {
     source      = "../systemd/csye6225.service"
     destination = "/tmp/csye6225.service"
   }
 
-  # 6. 移動檔案到正確位置並設定權限
+  provisioner "file" {
+    source      = "../cloudwatch-config.json"
+    destination = "/tmp/cloudwatch-config.json"
+  }
+
+  # ===================================================================
+  # Step 5: Move Files and Set Permissions
+  # ===================================================================
   provisioner "shell" {
     inline = [
       "echo 'Moving application files...'",
@@ -110,11 +134,30 @@ build {
       "sudo chmod 500 /opt/csye6225/webapp.jar",
       "echo 'Setting up systemd service...'",
       "sudo mv /tmp/csye6225.service /etc/systemd/system/csye6225.service",
-      "sudo chmod 644 /etc/systemd/system/csye6225.service"
+      "sudo chmod 644 /etc/systemd/system/csye6225.service",
+      "echo 'Moving CloudWatch config...'",
+      "sudo mkdir -p /opt/aws/amazon-cloudwatch-agent/etc/",
+      "sudo mv /tmp/cloudwatch-config.json /opt/aws/amazon-cloudwatch-agent/etc/",
+      "sudo chmod 644 /opt/aws/amazon-cloudwatch-agent/etc/cloudwatch-config.json"
     ]
   }
 
-  # 7. 啟用 systemd service (不啟動，因為還沒有資料庫連線資訊)
+  # ===================================================================
+  # Step 6: Install CloudWatch Agent
+  # ===================================================================
+  provisioner "shell" {
+    inline = [
+      "echo 'Installing CloudWatch Agent...'",
+      "wget -q https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb -O /tmp/amazon-cloudwatch-agent.deb",
+      "sudo DEBIAN_FRONTEND=noninteractive dpkg -i -E /tmp/amazon-cloudwatch-agent.deb",
+      "rm -f /tmp/amazon-cloudwatch-agent.deb",
+      "echo 'CloudWatch Agent installed successfully'"
+    ]
+  }
+
+  # ===================================================================
+  # Step 7: Enable Systemd Service
+  # ===================================================================
   provisioner "shell" {
     inline = [
       "echo 'Enabling systemd service...'",
@@ -124,7 +167,9 @@ build {
     ]
   }
 
-  # 9. 清理（不安裝 git 等開發工具）
+  # ===================================================================
+  # Step 8: Cleanup
+  # ===================================================================
   provisioner "shell" {
     inline = [
       "echo 'Cleaning up...'",
