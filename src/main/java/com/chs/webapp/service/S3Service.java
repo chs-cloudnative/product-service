@@ -1,5 +1,6 @@
 package com.chs.webapp.service;
 
+import com.timgroup.statsd.StatsDClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -17,22 +18,20 @@ public class S3Service {
 
     private final S3Client s3Client;
     private final String bucketName;
+    private final StatsDClient statsDClient;
 
-    public S3Service(S3Client s3Client, @Value("${aws.s3.bucket-name}") String bucketName) {
+    public S3Service(S3Client s3Client, 
+                     @Value("${aws.s3.bucket-name}") String bucketName,
+                     StatsDClient statsDClient) {
         this.s3Client = s3Client;
         this.bucketName = bucketName;
+        this.statsDClient = statsDClient;
     }
 
-    /**
-     * 上傳檔案到 S3
-     * @param file 要上傳的檔案
-     * @param userId 使用者 ID (用於分區儲存)
-     * @param productId 產品 ID
-     * @return S3 物件的完整路徑
-     */
     public String uploadFile(MultipartFile file, UUID userId, UUID productId) {
+        long startTime = System.currentTimeMillis();
+        
         try {
-            // 生成唯一的 S3 key: userId/productId/timestamp-originalFilename
             String timestamp = String.valueOf(System.currentTimeMillis());
             String originalFilename = file.getOriginalFilename();
             String s3Key = String.format("%s/%s/%s-%s", userId, productId, timestamp, originalFilename);
@@ -48,23 +47,27 @@ public class S3Service {
 
             s3Client.putObject(putObjectRequest, RequestBody.fromBytes(file.getBytes()));
 
-            log.info("File uploaded successfully to S3: {}", s3Key);
+            long duration = System.currentTimeMillis() - startTime;
+            statsDClient.recordExecutionTime("s3.upload.time", duration);
+            statsDClient.incrementCounter("s3.upload.success");
+            
+            log.info("File uploaded successfully to S3: {} - {}ms", s3Key, duration);
             return s3Key;
 
         } catch (S3Exception e) {
-            log.error("Error uploading file to S3: {}", e.awsErrorDetails().errorMessage());
+            statsDClient.incrementCounter("s3.upload.error");
+            log.error("Error uploading file to S3: {}", e.awsErrorDetails().errorMessage(), e);
             throw new RuntimeException("Failed to upload file to S3: " + e.getMessage(), e);
         } catch (IOException e) {
-            log.error("Error reading file: {}", e.getMessage());
+            statsDClient.incrementCounter("s3.upload.error");
+            log.error("Error reading file: {}", e.getMessage(), e);
             throw new RuntimeException("Failed to read file: " + e.getMessage(), e);
         }
     }
 
-    /**
-     * 從 S3 刪除檔案
-     * @param s3Key S3 物件的 key
-     */
     public void deleteFile(String s3Key) {
+        long startTime = System.currentTimeMillis();
+        
         try {
             log.info("Deleting file from S3: bucket={}, key={}", bucketName, s3Key);
 
@@ -75,19 +78,19 @@ public class S3Service {
 
             s3Client.deleteObject(deleteObjectRequest);
 
-            log.info("File deleted successfully from S3: {}", s3Key);
+            long duration = System.currentTimeMillis() - startTime;
+            statsDClient.recordExecutionTime("s3.delete.time", duration);
+            statsDClient.incrementCounter("s3.delete.success");
+            
+            log.info("File deleted successfully from S3: {} - {}ms", s3Key, duration);
 
         } catch (S3Exception e) {
-            log.error("Error deleting file from S3: {}", e.awsErrorDetails().errorMessage());
+            statsDClient.incrementCounter("s3.delete.error");
+            log.error("Error deleting file from S3: {}", e.awsErrorDetails().errorMessage(), e);
             throw new RuntimeException("Failed to delete file from S3: " + e.getMessage(), e);
         }
     }
 
-    /**
-     * 檢查檔案是否存在於 S3
-     * @param s3Key S3 物件的 key
-     * @return 檔案是否存在
-     */
     public boolean fileExists(String s3Key) {
         try {
             HeadObjectRequest headObjectRequest = HeadObjectRequest.builder()

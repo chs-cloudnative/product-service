@@ -1,0 +1,31 @@
+{
+  "agent": {
+    "metrics_collection_interval": 60,
+    "run_as_user": "root"
+  },
+  "logs": {
+    "logs_collected": {
+      "files": {
+        "collect_list": [
+          {
+            "file_path": "/opt/csye6225/logs/application.log",
+            "log_group_name": "/aws/ec2/csye6225",
+            "log_stream_name": "{instance_id}",
+            "retention_in_days": 7,
+            "timezone": "Local"
+          }
+        ]
+      }
+    }
+  },
+  "metrics": {
+    "namespace": "CSYE6225",
+    "metrics_collected": {
+      "statsd": {
+        "service_address": ":8125",
+        "metrics_collection_interval": 60,
+        "metrics_aggregation_interval": 300
+      }
+    }
+  }
+}

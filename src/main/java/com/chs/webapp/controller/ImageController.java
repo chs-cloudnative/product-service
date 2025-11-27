@@ -2,6 +2,7 @@ package com.chs.webapp.controller;
 
 import com.chs.webapp.dto.ImageResponse;
 import com.chs.webapp.service.ImageService;
+import com.timgroup.statsd.StatsDClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -20,67 +21,111 @@ import java.util.UUID;
 public class ImageController {
 
     private final ImageService imageService;
+    private final StatsDClient statsDClient;
 
-    /**
-     * 上傳圖片到產品
-     * POST /v1/product/{productId}/image
-     */
     @PostMapping
     public ResponseEntity<ImageResponse> uploadImage(
             @PathVariable UUID productId,
             @RequestParam("file") MultipartFile file,
             Authentication authentication) {
+        long startTime = System.currentTimeMillis();
+        
+        try {
+            statsDClient.incrementCounter("api.image.post.count");
+            log.info("POST /v1/product/{}/image - Uploading image", productId);
 
-        log.info("Uploading image to product: {}", productId);
-
-        String authenticatedEmail = authentication.getName();
-        ImageResponse response = imageService.uploadImage(productId, file, authenticatedEmail);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+            String authenticatedEmail = authentication.getName();
+            ImageResponse response = imageService.uploadImage(productId, file, authenticatedEmail);
+            
+            long duration = System.currentTimeMillis() - startTime;
+            statsDClient.recordExecutionTime("api.image.post.time", duration);
+            log.info("POST /v1/product/{}/image - Image uploaded - {}ms", productId, duration);
+            
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+            
+        } catch (Exception e) {
+            statsDClient.incrementCounter("api.image.post.error");
+            long duration = System.currentTimeMillis() - startTime;
+            log.error("POST /v1/product/{}/image - Error: {} - {}ms", productId, e.getMessage(), duration, e);
+            throw e;
+        }
     }
 
-    /**
-     * 取得產品的所有圖片
-     * GET /v1/product/{productId}/image
-     */
     @GetMapping
     public ResponseEntity<List<ImageResponse>> getProductImages(@PathVariable UUID productId) {
-        log.info("Getting images for product: {}", productId);
+        long startTime = System.currentTimeMillis();
+        
+        try {
+            statsDClient.incrementCounter("api.image.getall.count");
+            log.info("GET /v1/product/{}/image - Getting images", productId);
 
-        List<ImageResponse> images = imageService.getProductImages(productId);
-        return ResponseEntity.ok(images);
+            List<ImageResponse> images = imageService.getProductImages(productId);
+            
+            long duration = System.currentTimeMillis() - startTime;
+            statsDClient.recordExecutionTime("api.image.getall.time", duration);
+            log.info("GET /v1/product/{}/image - Retrieved {} images - {}ms", productId, images.size(), duration);
+            
+            return ResponseEntity.ok(images);
+            
+        } catch (Exception e) {
+            statsDClient.incrementCounter("api.image.getall.error");
+            long duration = System.currentTimeMillis() - startTime;
+            log.error("GET /v1/product/{}/image - Error: {} - {}ms", productId, e.getMessage(), duration, e);
+            throw e;
+        }
     }
 
-    /**
-     * 取得單一圖片資訊
-     * GET /v1/product/{productId}/image/{imageId}
-     */
     @GetMapping("/{imageId}")
     public ResponseEntity<ImageResponse> getImageById(
             @PathVariable UUID productId,
             @PathVariable UUID imageId) {
+        long startTime = System.currentTimeMillis();
+        
+        try {
+            statsDClient.incrementCounter("api.image.get.count");
+            log.info("GET /v1/product/{}/image/{} - Getting image", productId, imageId);
 
-        log.info("Getting image: imageId={}, productId={}", imageId, productId);
-
-        ImageResponse response = imageService.getImageById(productId, imageId);
-        return ResponseEntity.ok(response);
+            ImageResponse response = imageService.getImageById(productId, imageId);
+            
+            long duration = System.currentTimeMillis() - startTime;
+            statsDClient.recordExecutionTime("api.image.get.time", duration);
+            log.info("GET /v1/product/{}/image/{} - Image retrieved - {}ms", productId, imageId, duration);
+            
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            statsDClient.incrementCounter("api.image.get.error");
+            long duration = System.currentTimeMillis() - startTime;
+            log.error("GET /v1/product/{}/image/{} - Error: {} - {}ms", productId, imageId, e.getMessage(), duration, e);
+            throw e;
+        }
     }
 
-    /**
-     * 刪除圖片
-     * DELETE /v1/product/{productId}/image/{imageId}
-     */
     @DeleteMapping("/{imageId}")
     public ResponseEntity<Void> deleteImage(
             @PathVariable UUID productId,
             @PathVariable UUID imageId,
             Authentication authentication) {
+        long startTime = System.currentTimeMillis();
+        
+        try {
+            statsDClient.incrementCounter("api.image.delete.count");
+            log.info("DELETE /v1/product/{}/image/{} - Deleting image", productId, imageId);
 
-        log.info("Deleting image: imageId={}, productId={}", imageId, productId);
-
-        String authenticatedEmail = authentication.getName();
-        imageService.deleteImage(productId, imageId, authenticatedEmail);
-
-        return ResponseEntity.noContent().build();
+            String authenticatedEmail = authentication.getName();
+            imageService.deleteImage(productId, imageId, authenticatedEmail);
+            
+            long duration = System.currentTimeMillis() - startTime;
+            statsDClient.recordExecutionTime("api.image.delete.time", duration);
+            log.info("DELETE /v1/product/{}/image/{} - Image deleted - {}ms", productId, imageId, duration);
+            
+            return ResponseEntity.noContent().build();
+            
+        } catch (Exception e) {
+            statsDClient.incrementCounter("api.image.delete.error");
+            long duration = System.currentTimeMillis() - startTime;
+            log.error("DELETE /v1/product/{}/image/{} - Error: {} - {}ms", productId, imageId, e.getMessage(), duration, e);
+            throw e;
+        }
     }
 }
