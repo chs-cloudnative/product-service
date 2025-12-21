@@ -92,6 +92,22 @@ build {
   }
 
   # ===================================================================
+  # Step 2.5: Install AWS CLI v2
+  # ===================================================================
+  provisioner "shell" {
+    inline = [
+      "echo 'Installing AWS CLI v2...'",
+      "curl 'https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip' -o '/tmp/awscliv2.zip'",
+      "sudo apt-get install -y unzip",
+      "cd /tmp && unzip awscliv2.zip",
+      "sudo ./aws/install",
+      "echo 'Verifying AWS CLI installation...'",
+      "aws --version",
+      "rm -rf /tmp/awscliv2.zip /tmp/aws"
+    ]
+  }
+
+  # ===================================================================
   # Step 3: Create Application User and Group
   # ===================================================================
   provisioner "shell" {
