@@ -25,7 +25,7 @@ variable "ssh_username" {
 # AMI name prefix
 variable "ami_name_prefix" {
   type    = string
-  default = "csye6225"
+  default = "product-service"
 }
 
 # DEMO AWS Account ID
