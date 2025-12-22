@@ -11,7 +11,7 @@ public class MetricsConfig {
     @Bean
     public StatsDClient statsDClient() {
         return new NonBlockingStatsDClient(
-            "csye6225",      // prefix
+            "productservice",       // prefix
             "localhost",     // hostname
             8125             // port
         );

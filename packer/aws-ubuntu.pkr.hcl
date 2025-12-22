@@ -1,10 +1,10 @@
-# ===================================================================
-# Packer Configuration for CSYE6225 Web Application AMI
-# ===================================================================
+# =================================================================================
+# Packer Configuration for Product Service Web Application AMI
+# =================================================================================
 
-# ===================================================================
+# =================================================================================
 # Required Plugins
-# ===================================================================
+# =================================================================================
 packer {
   required_plugins {
     amazon = {
@@ -14,9 +14,9 @@ packer {
   }
 }
 
-# ===================================================================
+# =================================================================================
 # Data Source: Find Latest Ubuntu 24.04 LTS AMI
-# ===================================================================
+# =================================================================================
 data "amazon-ami" "ubuntu" {
   filters = {
     name                = "ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-*"
@@ -28,13 +28,13 @@ data "amazon-ami" "ubuntu" {
   region      = var.aws_region
 }
 
-# ===================================================================
+# =================================================================================
 # Source Configuration: EC2 Instance for AMI Creation
-# ===================================================================
+# =================================================================================
 source "amazon-ebs" "webapp" {
   # AMI Configuration
   ami_name        = "${var.ami_name_prefix}-${formatdate("YYYY-MM-DD-hhmm", timestamp())}"
-  ami_description = "AMI for CSYE6225 Web Application"
+  ami_description = "AMI for Product Service Web Application"
   ami_users       = [var.demo_account_id]
   ami_regions     = [var.aws_region]
 
@@ -56,19 +56,19 @@ source "amazon-ebs" "webapp" {
   tags = {
     Name        = "${var.ami_name_prefix}-${formatdate("YYYY-MM-DD-hhmm", timestamp())}"
     Environment = "dev"
-    Application = "webapp"
+    Application = "product-service"
   }
 }
 
-# ===================================================================
+# =================================================================================
 # Build Configuration: Provisioning Steps
-# ===================================================================
+# =================================================================================
 build {
   sources = ["source.amazon-ebs.webapp"]
 
-  # ===================================================================
+  # =================================================================================
   # Step 1: Update System Packages
-  # ===================================================================
+  # =================================================================================
   provisioner "shell" {
     inline = [
       "echo 'Waiting for cloud-init to complete...'",
@@ -79,9 +79,9 @@ build {
     ]
   }
 
-  # ===================================================================
-  # Step 2: Install Required Software
-  # ===================================================================
+  # =================================================================================
+  # Step 2: Install Java Runtime
+  # =================================================================================
   provisioner "shell" {
     inline = [
       "echo 'Installing Java 21...'",
@@ -91,9 +91,9 @@ build {
     ]
   }
 
-  # ===================================================================
-  # Step 2.5: Install AWS CLI v2
-  # ===================================================================
+  # =================================================================================
+  # Step 3: Install AWS CLI v2
+  # =================================================================================
   provisioner "shell" {
     inline = [
       "echo 'Installing AWS CLI v2...'",
@@ -107,31 +107,31 @@ build {
     ]
   }
 
-  # ===================================================================
-  # Step 3: Create Application User and Group
-  # ===================================================================
+  # =================================================================================
+  # Step 4: Create Application User and Group
+  # =================================================================================
   provisioner "shell" {
     inline = [
-      "echo 'Creating csye6225 user and group...'",
-      "sudo groupadd csye6225",
-      "sudo useradd -r -g csye6225 -s /usr/sbin/nologin csye6225",
+      "echo 'Creating productservice user and group...'",
+      "sudo groupadd productservice",
+      "sudo useradd -r -g productservice -s /usr/sbin/nologin productservice",
       "echo 'Creating application directory...'",
-      "sudo mkdir -p /opt/csye6225",
-      "sudo chown csye6225:csye6225 /opt/csye6225"
+      "sudo mkdir -p /opt/productservice",
+      "sudo chown productservice:productservice /opt/productservice"
     ]
   }
 
-  # ===================================================================
-  # Step 4: Upload Application Files
-  # ===================================================================
+  # =================================================================================
+  # Step 5: Upload Application Files
+  # =================================================================================
   provisioner "file" {
     source      = "../target/webapp-0.0.1-SNAPSHOT.jar"
     destination = "/tmp/webapp.jar"
   }
 
   provisioner "file" {
-    source      = "../systemd/csye6225.service"
-    destination = "/tmp/csye6225.service"
+    source      = "../systemd/productservice.service"
+    destination = "/tmp/productservice.service"
   }
 
   provisioner "file" {
@@ -139,18 +139,18 @@ build {
     destination = "/tmp/cloudwatch-config.json"
   }
 
-  # ===================================================================
-  # Step 5: Move Files and Set Permissions
-  # ===================================================================
+  # =================================================================================
+  # Step 6: Move Files and Set Permissions
+  # =================================================================================
   provisioner "shell" {
     inline = [
       "echo 'Moving application files...'",
-      "sudo mv /tmp/webapp.jar /opt/csye6225/webapp.jar",
-      "sudo chown csye6225:csye6225 /opt/csye6225/webapp.jar",
-      "sudo chmod 500 /opt/csye6225/webapp.jar",
+      "sudo mv /tmp/webapp.jar /opt/productservice/webapp.jar",
+      "sudo chown productservice:productservice /opt/productservice/webapp.jar",
+      "sudo chmod 500 /opt/productservice/webapp.jar",
       "echo 'Setting up systemd service...'",
-      "sudo mv /tmp/csye6225.service /etc/systemd/system/csye6225.service",
-      "sudo chmod 644 /etc/systemd/system/csye6225.service",
+      "sudo mv /tmp/productservice.service /etc/systemd/system/productservice.service",
+      "sudo chmod 644 /etc/systemd/system/productservice.service",
       "echo 'Moving CloudWatch config...'",
       "sudo mkdir -p /opt/aws/amazon-cloudwatch-agent/etc/",
       "sudo mv /tmp/cloudwatch-config.json /opt/aws/amazon-cloudwatch-agent/etc/",
@@ -158,9 +158,9 @@ build {
     ]
   }
 
-  # ===================================================================
-  # Step 6: Install CloudWatch Agent
-  # ===================================================================
+  # =================================================================================
+  # Step 7: Install CloudWatch Agent
+  # =================================================================================
   provisioner "shell" {
     inline = [
       "echo 'Installing CloudWatch Agent...'",
@@ -171,21 +171,21 @@ build {
     ]
   }
 
-  # ===================================================================
-  # Step 7: Enable Systemd Service
-  # ===================================================================
+  # =================================================================================
+  # Step 8: Enable Systemd Service
+  # =================================================================================
   provisioner "shell" {
     inline = [
       "echo 'Enabling systemd service...'",
       "sudo systemctl daemon-reload",
-      "sudo systemctl enable csye6225.service",
+      "sudo systemctl enable productservice.service",
       "echo 'Service will be started by user-data script on EC2 launch'"
     ]
   }
 
-  # ===================================================================
-  # Step 8: Cleanup
-  # ===================================================================
+  # =================================================================================
+  # Step 9: Cleanup
+  # =================================================================================
   provisioner "shell" {
     inline = [
       "echo 'Cleaning up...'",

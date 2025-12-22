@@ -22,6 +22,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final StatsDClient statsDClient;
+    private final EmailVerificationService emailVerificationService;
 
     @Transactional
     public UserResponse createUser(UserCreateRequest request) {
@@ -49,6 +50,21 @@ public class UserService {
         statsDClient.recordExecutionTime("db.user.findById.time", System.currentTimeMillis() - dbStartTime);
 
         log.info("User created successfully with ID: {}", savedUser.getId());
+
+        // Send verification email via SNS
+        long snsStartTime = System.currentTimeMillis();
+        try {
+            emailVerificationService.sendVerificationEmail(refreshedUser);
+            statsDClient.recordExecutionTime("sns.verification.send.time", System.currentTimeMillis() - snsStartTime);
+            statsDClient.incrementCounter("sns.verification.send.success");
+            log.info("Verification email sent for user: {}", refreshedUser.getEmail());
+        } catch (Exception e) {
+            statsDClient.recordExecutionTime("sns.verification.send.time", System.currentTimeMillis() - snsStartTime);
+            statsDClient.incrementCounter("sns.verification.send.failure");
+            log.error("Failed to send verification email for: {}", refreshedUser.getEmail(), e);
+            // Don't fail user creation if email fails, User can request resend verification email later
+        }
+
         return mapToResponse(refreshedUser);
     }
 
@@ -68,7 +84,7 @@ public class UserService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("User not found with email: " + email));
         statsDClient.recordExecutionTime("db.user.findByEmail.time", System.currentTimeMillis() - dbStartTime);
-        
+
         return user;
     }
 
@@ -120,6 +136,7 @@ public class UserService {
                 .lastName(user.getLastName())
                 .accountCreated(user.getAccountCreated())
                 .accountUpdated(user.getAccountUpdated())
+                .verified(user.getVerified())
                 .build();
     }
 }

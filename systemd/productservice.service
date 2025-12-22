@@ -1,0 +1,37 @@
+[Unit]
+Description=Product Service Web Application
+# Start only after network is available
+After=network.target
+Wants=network-online.target
+
+[Service]
+# simple: The main process is the service itself
+Type=simple
+
+# Run as non-privileged user
+User=productservice
+Group=productservice
+WorkingDirectory=/opt/productservice
+
+# Load configuration from environment file
+EnvironmentFile=/opt/productservice/.env
+
+# Command to start the application
+ExecStart=/usr/bin/java -jar /opt/productservice/webapp.jar
+
+# Logging output
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=productservice-webapp
+
+# Auto-restart configuration
+Restart=on-failure
+RestartSec=10
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+# Start at multi-user.target (equivalent to boot time)
+WantedBy=multi-user.target

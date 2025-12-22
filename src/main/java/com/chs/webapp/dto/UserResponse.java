@@ -20,4 +20,5 @@ public class UserResponse {
     private String lastName;
     private LocalDateTime accountCreated;
     private LocalDateTime accountUpdated;
+    private Boolean verified;
 }
