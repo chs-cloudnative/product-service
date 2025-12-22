@@ -51,4 +51,8 @@ public class User {
     @UpdateTimestamp
     @Column(name = "account_updated", nullable = false)
     private LocalDateTime accountUpdated;
+
+    @Column(name = "verified", nullable = false)
+    @Builder.Default
+    private Boolean verified = false;  // Default to false when user registers
 }

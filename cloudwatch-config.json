@@ -8,8 +8,8 @@
       "files": {
         "collect_list": [
           {
-            "file_path": "/opt/csye6225/logs/application.log",
-            "log_group_name": "/aws/ec2/csye6225",
+            "file_path": "/opt/productservice/logs/application.log",
+            "log_group_name": "/aws/ec2/product-service",
             "log_stream_name": "{instance_id}",
             "retention_in_days": 7,
             "timezone": "Local"
@@ -19,7 +19,7 @@
     }
   },
   "metrics": {
-    "namespace": "CSYE6225",
+    "namespace": "ProductService",
     "metrics_collected": {
       "statsd": {
         "service_address": ":8125",
