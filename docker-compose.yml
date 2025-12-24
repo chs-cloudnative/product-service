@@ -1,22 +1,23 @@
 services:
   postgres:
     image: postgres:16
-    container_name: webapp_postgres
+    container_name: product-service_postgres
     environment:
-      POSTGRES_DB: webapp_db
-      POSTGRES_USER: webapp_user
-      POSTGRES_PASSWORD: webapp_password
+      POSTGRES_DB: product-service_db
+      POSTGRES_USER: product-service_user
+      POSTGRES_PASSWORD: product-service_password
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
-      - webapp-network
+      - product-service-network
 
 volumes:
   postgres_data:
 
 networks:
-  webapp-network:
+  product-service-network:
+    name: product-service
     driver: bridge
 
