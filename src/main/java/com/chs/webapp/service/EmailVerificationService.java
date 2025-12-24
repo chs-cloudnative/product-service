@@ -5,8 +5,8 @@ import com.chs.webapp.entity.User;
 import com.chs.webapp.repository.EmailVerificationRepository;
 import com.chs.webapp.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,17 +20,28 @@ import java.util.Map;
 import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class EmailVerificationService {
 
     private final EmailVerificationRepository verificationRepository;
     private final UserRepository userRepository;
-    private final SnsClient snsClient;
     private final ObjectMapper objectMapper;
+
+    @Autowired(required = false)  // ← 改成 optional
+    private SnsClient snsClient;
 
     @Value("${aws.sns.topic-arn}")
     private String snsTopicArn;
+
+    // 手動建立 constructor（移除 @RequiredArgsConstructor）
+    public EmailVerificationService(
+            EmailVerificationRepository verificationRepository,
+            UserRepository userRepository,
+            ObjectMapper objectMapper) {
+        this.verificationRepository = verificationRepository;
+        this.userRepository = userRepository;
+        this.objectMapper = objectMapper;
+    }
 
     /**
      * Send verification email via SNS
@@ -39,9 +50,9 @@ public class EmailVerificationService {
     public void sendVerificationEmail(User user) {
         log.info("Sending verification email to: {}", user.getEmail());
 
-        // Skip email sending if SNS is not configured (test environment)
-        if (snsTopicArn == null || snsTopicArn.trim().isEmpty()) {
-            log.warn("SNS Topic ARN not configured, skipping email verification");
+        // Skip email sending if SNS is not configured (test/local environment)
+        if (snsClient == null || snsTopicArn == null || snsTopicArn.trim().isEmpty()) {
+            log.warn("SNS not configured, skipping email verification for: {}", user.getEmail());
             return;
         }
 
@@ -50,14 +61,14 @@ public class EmailVerificationService {
                         user.getEmail(),
                         LocalDateTime.now()
                 );
-        if (hasValidToken) { // Check if a valid token already exists (prevent duplicate emails)
+        if (hasValidToken) {
             log.warn("Valid verification token already exists for: {}", user.getEmail());
             return;
         }
 
         // Generate verification token
         String token = UUID.randomUUID().toString();
-        LocalDateTime expiresAt = LocalDateTime.now().plusMinutes(1); // 1 minute expiry
+        LocalDateTime expiresAt = LocalDateTime.now().plusMinutes(1);
 
         // Save verification record
         EmailVerification verification = EmailVerification.builder()
@@ -100,26 +111,21 @@ public class EmailVerificationService {
     public void verifyEmail(String email, String token) {
         log.info("Verifying email: {} with token: {}", email, token);
 
-        // Find verification record
         EmailVerification verification = verificationRepository
                 .findByEmailAndToken(email, token)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid verification token"));
 
-        // Check if already verified
         if (verification.getVerified()) {
             throw new IllegalArgumentException("Email already verified");
         }
 
-        // Check if expired
         if (verification.isExpired()) {
             throw new IllegalArgumentException("Verification token has expired");
         }
 
-        // Mark verification as used
         verification.setVerified(true);
         verificationRepository.save(verification);
 
-        // Update user as verified
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
@@ -130,7 +136,7 @@ public class EmailVerificationService {
     }
 
     /**
-     * Cleanup expired tokens (can be called by scheduled task)
+     * Cleanup expired tokens
      */
     @Transactional
     public void cleanupExpiredTokens() {

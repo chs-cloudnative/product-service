@@ -128,6 +128,20 @@ public class UserService {
         return mapToResponse(refreshedUser);
     }
 
+    @Transactional
+    public void deleteUserByEmail(String authenticatedEmail) {
+        long dbStartTime = System.currentTimeMillis();
+        User user = userRepository.findByEmail(authenticatedEmail)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with email: " + authenticatedEmail));
+        statsDClient.recordExecutionTime("db.user.findByEmail.time", System.currentTimeMillis() - dbStartTime);
+
+        dbStartTime = System.currentTimeMillis();
+        userRepository.delete(user);
+        statsDClient.recordExecutionTime("db.user.delete.time", System.currentTimeMillis() - dbStartTime);
+
+        log.info("User deleted successfully: {}", authenticatedEmail);
+    }
+
     private UserResponse mapToResponse(User user) {
         return UserResponse.builder()
                 .id(user.getId())

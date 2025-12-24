@@ -2,6 +2,7 @@ package com.chs.webapp.service;
 
 import com.timgroup.statsd.StatsDClient;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,21 +17,29 @@ import java.util.UUID;
 @Slf4j
 public class S3Service {
 
-    private final S3Client s3Client;
+    @Autowired(required = false)  // ← S3Client 變成 optional
+    private S3Client s3Client;
+
     private final String bucketName;
     private final StatsDClient statsDClient;
 
-    public S3Service(S3Client s3Client, 
-                     @Value("${aws.s3.bucket-name}") String bucketName,
+    // Constructor 不包含 s3Client
+    public S3Service(@Value("${aws.s3.bucket-name}") String bucketName,
                      StatsDClient statsDClient) {
-        this.s3Client = s3Client;
         this.bucketName = bucketName;
         this.statsDClient = statsDClient;
     }
 
     public String uploadFile(MultipartFile file, UUID userId, UUID productId) {
+        // 本地測試時跳過 S3
+        if (s3Client == null || bucketName == null || bucketName.trim().isEmpty()) {
+            log.warn("S3 not configured, skipping file upload for local testing");
+            // 返回一個假的 S3 key 用於測試
+            return String.format("local-test/%s/%s/%s", userId, productId, file.getOriginalFilename());
+        }
+
         long startTime = System.currentTimeMillis();
-        
+
         try {
             String timestamp = String.valueOf(System.currentTimeMillis());
             String originalFilename = file.getOriginalFilename();
@@ -50,7 +59,7 @@ public class S3Service {
             long duration = System.currentTimeMillis() - startTime;
             statsDClient.recordExecutionTime("s3.upload.time", duration);
             statsDClient.incrementCounter("s3.upload.success");
-            
+
             log.info("File uploaded successfully to S3: {} - {}ms", s3Key, duration);
             return s3Key;
 
@@ -66,8 +75,14 @@ public class S3Service {
     }
 
     public void deleteFile(String s3Key) {
+        // 本地測試時跳過 S3
+        if (s3Client == null || bucketName == null || bucketName.trim().isEmpty()) {
+            log.warn("S3 not configured, skipping file delete for local testing");
+            return;
+        }
+
         long startTime = System.currentTimeMillis();
-        
+
         try {
             log.info("Deleting file from S3: bucket={}, key={}", bucketName, s3Key);
 
@@ -81,7 +96,7 @@ public class S3Service {
             long duration = System.currentTimeMillis() - startTime;
             statsDClient.recordExecutionTime("s3.delete.time", duration);
             statsDClient.incrementCounter("s3.delete.success");
-            
+
             log.info("File deleted successfully from S3: {} - {}ms", s3Key, duration);
 
         } catch (S3Exception e) {
@@ -92,6 +107,12 @@ public class S3Service {
     }
 
     public boolean fileExists(String s3Key) {
+        // 本地測試時假設文件存在
+        if (s3Client == null || bucketName == null || bucketName.trim().isEmpty()) {
+            log.warn("S3 not configured, returning true for local testing");
+            return true;
+        }
+
         try {
             HeadObjectRequest headObjectRequest = HeadObjectRequest.builder()
                     .bucket(bucketName)
