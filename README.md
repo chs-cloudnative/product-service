@@ -61,7 +61,7 @@ A production-ready **RESTful API service** for product and user management, feat
 
 <table>
 <tr>
-<td width="33%" valign="top">
+<td valign="top">
 
 ### 🔄 **Full CI/CD Automation**
 
@@ -78,7 +78,7 @@ Merge → Build JAR → Packer AMI
 From commit to production in<br>**~10 minutes**
 
 </td>
-<td width="33%" valign="top">
+<td valign="top">
 
 ### 📧 **Email Verification**
 
@@ -95,7 +95,7 @@ User Register → SNS Topic
 UUID valid for **1 minute**,<br>prevent duplicates
 
 </td>
-<td width="33%" valign="top">
+<td valign="top">
 
 ### 📊 **CloudWatch Metrics**
 
