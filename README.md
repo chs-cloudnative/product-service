@@ -69,12 +69,14 @@ A production-ready **RESTful API service** for product and user management, feat
 
 ```
 PR → Test + Validate
-Merge → Build JAR → Packer AMI
-     → Launch Template Update
-     → Instance Refresh
+Merge
+  → Build JAR
+  → Packer AMI
+  → Launch Template 🔄
+  → Instance Refresh
 ```
 
-**Zero manual steps**  
+**Zero manual steps:**  
 From commit to production in **~10 minutes**
 
 </td>
@@ -85,13 +87,14 @@ From commit to production in **~10 minutes**
 **Serverless Workflow**
 
 ```
-User Register → SNS Topic
-             → Lambda Function
-             → Mailgun API
-             → Email Sent
+User Register 
+  → SNS Topic
+  → Lambda Function
+  → Mailgun API
+  → Email Sent
 ```
 
-**Time-limited tokens**  
+**Time-limited tokens:**  
 UUID valid for **1 minute**, prevent duplicates
 
 </td>
@@ -106,7 +109,7 @@ UUID valid for **1 minute**, prevent duplicates
 - Database query duration
 - S3 operation timing
 
-**Real-time monitoring**  
+**Real-time monitoring:**  
 Integrated with Auto-scaling policies
 
 </td>
