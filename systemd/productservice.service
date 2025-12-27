@@ -17,7 +17,7 @@ WorkingDirectory=/opt/productservice
 EnvironmentFile=/opt/productservice/.env
 
 # Command to start the application
-ExecStart=/usr/bin/java -jar /opt/productservice/webapp.jar
+ExecStart=/usr/bin/java -jar /opt/productservice/product-service.jar
 
 # Logging output
 StandardOutput=journal
