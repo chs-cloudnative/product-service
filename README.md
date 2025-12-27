@@ -70,10 +70,10 @@ A production-ready **RESTful API service** for product and user management, feat
 ```
 PR → Test + Validate
 Merge
-     → Build JAR
-     → Packer AMI
-     → Launch Template Update
-     → Instance Refresh
+  → Build JAR
+  → Packer AMI
+  → Launch Template 🔄
+  → Instance Refresh
 ```
 
 **Zero manual steps:**  
@@ -87,11 +87,11 @@ From commit to production in **~10 minutes**
 **Serverless Workflow**
 
 ```
-User Register
-     → SNS Topic
-     → Lambda Function
-     → Mailgun API
-     → Email Sent
+User Register 
+  → SNS Topic
+  → Lambda Function
+  → Mailgun API
+  → Email Sent
 ```
 
 **Time-limited tokens:**  
