@@ -61,7 +61,7 @@ A production-ready **RESTful API service** for product and user management, feat
 
 <table>
 <tr>
-<td width="5%" valign="top">
+<td width="33%" valign="top">
 
 ### 🔄 **Full CI/CD Automation**
 
@@ -69,33 +69,36 @@ A production-ready **RESTful API service** for product and user management, feat
 
 ```
 PR → Test + Validate
-Merge → Build JAR → Packer AMI
+Merge
+     → Build JAR
+     → Packer AMI
      → Launch Template Update
      → Instance Refresh
 ```
 
-**Zero manual steps**  
+**Zero manual steps:**  
 From commit to production in **~10 minutes**
 
 </td>
-<td width="5%" valign="top">
+<td width="33%" valign="top">
 
 ### 📧 **Email Verification**
 
 **Serverless Workflow**
 
 ```
-User Register → SNS Topic
-             → Lambda Function
-             → Mailgun API
-             → Email Sent
+User Register
+     → SNS Topic
+     → Lambda Function
+     → Mailgun API
+     → Email Sent
 ```
 
-**Time-limited tokens**  
+**Time-limited tokens:**  
 UUID valid for **1 minute**, prevent duplicates
 
 </td>
-<td width="20%" valign="top">
+<td width="33%" valign="top">
 
 ### 📊 **CloudWatch Metrics**
 
@@ -106,7 +109,7 @@ UUID valid for **1 minute**, prevent duplicates
 - Database query duration
 - S3 operation timing
 
-**Real-time monitoring**  
+**Real-time monitoring:**  
 Integrated with Auto-scaling policies
 
 </td>
