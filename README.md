@@ -75,7 +75,7 @@ Merge → Build JAR → Packer AMI
 ```
 
 **Zero manual steps**  
-From commit to production in **~10 minutes**
+From commit to production in<br>**~10 minutes**
 
 </td>
 <td width="33%" valign="top">
@@ -92,7 +92,7 @@ User Register → SNS Topic
 ```
 
 **Time-limited tokens**  
-UUID valid for **1 minute**, prevent duplicates
+UUID valid for **1 minute**,<br>prevent duplicates
 
 </td>
 <td width="33%" valign="top">
