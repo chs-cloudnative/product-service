@@ -12,12 +12,12 @@ jobs:
   build-ami:
     name: Build and Share AMI
     runs-on: ubuntu-latest
-    
+
     steps:
       # 1. Checkout 程式碼
       - name: Checkout code
         uses: actions/checkout@v3
-      
+
       # 2. 設定 Java（用來建立 Spring Boot JAR）
       - name: Set up JDK 21
         uses: actions/setup-java@v3
@@ -25,24 +25,24 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
           cache: maven
-      
+
       # 3. 執行測試
       - name: Run tests
         run: mvn test
-      
+
       # 4. 建立 JAR 檔案（在 GitHub runner 上建立，不是在 Packer 中）
       - name: Build application artifact
         run: mvn clean package -DskipTests
-      
+
       # 5. 驗證 JAR 檔案是否存在
       - name: Verify artifact
         run: |
-          if [ ! -f target/webapp-0.0.1-SNAPSHOT.jar ]; then
+          if [ ! -f target/product-service-0.0.1-SNAPSHOT.jar ]; then
             echo "Error: JAR file not found!"
             exit 1
           fi
-          ls -lh target/webapp-0.0.1-SNAPSHOT.jar
-      
+          ls -lh target/product-service-0.0.1-SNAPSHOT.jar
+
       # 6. 配置 AWS credentials
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -50,19 +50,19 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
-      
+
       # 7. 安裝 Packer
       - name: Setup Packer
         uses: hashicorp/setup-packer@main
         with:
           version: latest
-      
+
       # 8. 初始化 Packer
       - name: Initialize Packer
         run: |
           cd packer
           packer init .
-      
+
       # 9. 建立 AMI
       - name: Build AMI with Packer
         run: |
@@ -71,7 +71,7 @@ jobs:
             -var "aws_region=${{ secrets.AWS_REGION }}" \
             -var "demo_account_id=${{ secrets.DEMO_ACCOUNT_ID }}" \
             .
-      
+
       # 10. 顯示建立完成訊息
       - name: Build complete
         run: echo "AMI has been built and shared successfully!"

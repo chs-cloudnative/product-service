@@ -9,9 +9,9 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.chs</groupId>
-	<artifactId>webapp</artifactId>
+	<artifactId>product-service</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>webapp</name>
+	<name>product-service</name>
 	<description>Cloud Native Web Application</description>
 	<url/>
 	<licenses>

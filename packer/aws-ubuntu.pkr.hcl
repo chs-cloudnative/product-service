@@ -31,7 +31,7 @@ data "amazon-ami" "ubuntu" {
 # =================================================================================
 # Source Configuration: EC2 Instance for AMI Creation
 # =================================================================================
-source "amazon-ebs" "webapp" {
+source "amazon-ebs" "product-service" {
   # AMI Configuration
   ami_name        = "${var.ami_name_prefix}-${formatdate("YYYY-MM-DD-hhmm", timestamp())}"
   ami_description = "AMI for Product Service Web Application"
@@ -64,7 +64,7 @@ source "amazon-ebs" "webapp" {
 # Build Configuration: Provisioning Steps
 # =================================================================================
 build {
-  sources = ["source.amazon-ebs.webapp"]
+  sources = ["source.amazon-ebs.product-service"]
 
   # =================================================================================
   # Step 1: Update System Packages
@@ -125,8 +125,8 @@ build {
   # Step 5: Upload Application Files
   # =================================================================================
   provisioner "file" {
-    source      = "../target/webapp-0.0.1-SNAPSHOT.jar"
-    destination = "/tmp/webapp.jar"
+    source      = "../target/product-service-0.0.1-SNAPSHOT.jar"
+    destination = "/tmp/product-service.jar"
   }
 
   provisioner "file" {
@@ -145,9 +145,9 @@ build {
   provisioner "shell" {
     inline = [
       "echo 'Moving application files...'",
-      "sudo mv /tmp/webapp.jar /opt/productservice/webapp.jar",
-      "sudo chown productservice:productservice /opt/productservice/webapp.jar",
-      "sudo chmod 500 /opt/productservice/webapp.jar",
+      "sudo mv /tmp/product-service.jar /opt/productservice/product-service.jar",
+      "sudo chown productservice:productservice /opt/productservice/product-service.jar",
+      "sudo chmod 500 /opt/productservice/product-service.jar",
       "echo 'Setting up systemd service...'",
       "sudo mv /tmp/productservice.service /etc/systemd/system/productservice.service",
       "sudo chmod 644 /etc/systemd/system/productservice.service",
