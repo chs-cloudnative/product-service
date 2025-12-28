@@ -780,27 +780,31 @@ product-service/
 
 ## 🎓 Skills Demonstrated
 
-<table>
+<table style="width: 100%;">
 <tr>
 <td width="50%" valign="top">
 
 ### ☁️ Cloud & DevOps
-- ✅ AWS multi-service integration (EC2, RDS, S3, SNS, Lambda)
+- ✅ AWS multi-service integration (EC2, RDS, S3, SNS ...) 
 - ✅ Infrastructure as Code (Packer for AMI automation)
 - ✅ CI/CD pipeline design (GitHub Actions)
 - ✅ Auto-scaling and high availability patterns
 - ✅ Zero-downtime deployment strategies
 - ✅ CloudWatch monitoring and custom metrics
 
+</td>
+<td width="50%" valign="top">
+  
 ### 🔐 Security & Best Practices
 - ✅ IAM roles and policies (least privilege)
 - ✅ Encryption at rest (KMS for RDS + S3)
 - ✅ Secrets management (AWS Secrets Manager)
 - ✅ Network isolation (VPC, private subnets)
 - ✅ BCrypt password hashing with salt
-- ✅ Token-based authentication (stateless)
+- ✅ Token-based authentication (stateless) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 
 </td>
+<tr>
 <td width="50%" valign="top">
 
 ### 💻 Backend Development
@@ -809,10 +813,13 @@ product-service/
 - ✅ JPA/Hibernate ORM with PostgreSQL
 - ✅ Event-driven architecture (SNS + Lambda)
 - ✅ File upload and storage (S3 integration)
-- ✅ Comprehensive error handling
+- ✅ Comprehensive error handling &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+</td>
+<td width="50%" valign="top">
 
 ### 🧪 Testing & Quality
-- ✅ Integration testing (REST Assured)
+- ✅ Integration testing (REST Assured) 
 - ✅ Unit testing (JUnit 5)
 - ✅ Test automation in CI pipeline
 - ✅ API testing with Postman
