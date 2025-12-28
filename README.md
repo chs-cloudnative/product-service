@@ -627,7 +627,7 @@ mvn jacoco:report
 
 <table>
 <tr>
-<td width="33%">
+<td>
 
 **✅ Positive Tests**
 - User registration
@@ -637,17 +637,17 @@ mvn jacoco:report
 - Health check
 
 </td>
-<td width="33%">
+<td>
 
 **❌ Negative Tests**
 - Invalid credentials
 - Duplicate email
 - Unauthorized access
 - Invalid input format
-- Missing required fields
+- Missing fields
 
 </td>
-<td width="33%">
+<td>
 
 **🔍 Edge Cases**
 - Empty strings
