@@ -7,7 +7,12 @@
 
 **Production-ready RESTful API with automated CI/CD, email verification, and cloud-native architecture**
 
-[🎯 Features](#-key-features) • [🏗️ Architecture](#️-architecture) • [🚀 Quick Start](#-quick-start) • [📡 API Reference](#-api-endpoints) • [📊 Monitoring](#-monitoring)
+## 🔗 Related Repositories
+
+| Repository | Description | Link |
+|------------|-------------|------|
+| **tf-aws-infra** | Terraform infrastructure (VPC, RDS, ALB, Auto-scaling) | [View](https://github.com/chs-cloudnative/tf-aws-infra) |
+| **serverless** | Lambda function for email verification | [View](https://github.com/chs-cloudnative/serverless) |
 
 ---
 
@@ -372,32 +377,6 @@ curl http://localhost:8080/healthz
 # Expected: 200 OK (empty body)
 ```
 
-**Docker Compose Configuration** (`docker-compose.yml`):
-```yaml
-services:
-  postgres:
-    image: postgres:16
-    container_name: product-service_postgres
-    environment:
-      POSTGRES_DB: product-service_db
-      POSTGRES_USER: product-service_user
-      POSTGRES_PASSWORD: product-service_password
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - product-service-network
-
-volumes:
-  postgres_data:
-
-networks:
-  product-service-network:
-    name: product-service
-    driver: bridge
-```
-
 ### Deploy to AWS
 
 **Automated via CI/CD**:
@@ -438,7 +417,7 @@ See [tf-aws-infra](https://github.com/chs-cloudnative/tf-aws-infra) for infrastr
 **Jobs**:
 ```yaml
 1. Integration Tests
-   - Setup PostgreSQL
+   - Setup JDK 21 and H2 database
    - Run REST Assured tests
    - Validate all endpoints
 
@@ -469,17 +448,17 @@ See [tf-aws-infra](https://github.com/chs-cloudnative/tf-aws-infra) for infrastr
 2. Build AMI (Packer)
    - Launch Ubuntu 24.04
    - Install Java 21
-   - Copy JAR to /opt/productservice/
+   - Copy JAR /opt/productservice/
    - Setup SystemD service
    - Create custom AMI
 
 3. Update Infrastructure
-   - Create new Launch Template version
+   - Create new Launch Template
    - Trigger instance refresh
    - Wait for health checks
 ```
 
-**Result**: ✅ New version deployed (~10 min)
+**Result**: ✅ New version deployed (10 min)
 
 </td>
 </tr>
@@ -782,13 +761,6 @@ product-service/
 ├── pom.xml                             # Maven dependencies
 └── README.md
 ```
-
-## 🔗 Related Repositories
-
-| Repository | Description | Link |
-|------------|-------------|------|
-| **tf-aws-infra** | Terraform infrastructure (VPC, RDS, ALB, Auto-scaling) | [View](https://github.com/chs-cloudnative/tf-aws-infra) |
-| **serverless** | Lambda function for email verification | [View](https://github.com/chs-cloudnative/serverless) |
 
 ---
 
