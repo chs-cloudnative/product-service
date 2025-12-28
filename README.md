@@ -7,7 +7,12 @@
 
 **Production-ready RESTful API with automated CI/CD, email verification, and cloud-native architecture**
 
-[🎯 Features](#-key-features) • [🏗️ Architecture](#️-architecture) • [🚀 Quick Start](#-quick-start) • [📡 API Reference](#-api-endpoints) • [📊 Monitoring](#-monitoring)
+## 🔗 Related Repositories
+
+| Repository | Description | Link |
+|------------|-------------|------|
+| **tf-aws-infra** | Terraform infrastructure (VPC, RDS, ALB, Auto-scaling) | [View](https://github.com/chs-cloudnative/tf-aws-infra) |
+| **serverless** | Lambda function for email verification | [View](https://github.com/chs-cloudnative/serverless) |
 
 ---
 
@@ -372,32 +377,6 @@ curl http://localhost:8080/healthz
 # Expected: 200 OK (empty body)
 ```
 
-**Docker Compose Configuration** (`docker-compose.yml`):
-```yaml
-services:
-  postgres:
-    image: postgres:16
-    container_name: product-service_postgres
-    environment:
-      POSTGRES_DB: product-service_db
-      POSTGRES_USER: product-service_user
-      POSTGRES_PASSWORD: product-service_password
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - product-service-network
-
-volumes:
-  postgres_data:
-
-networks:
-  product-service-network:
-    name: product-service
-    driver: bridge
-```
-
 ### Deploy to AWS
 
 **Automated via CI/CD**:
@@ -438,7 +417,7 @@ See [tf-aws-infra](https://github.com/chs-cloudnative/tf-aws-infra) for infrastr
 **Jobs**:
 ```yaml
 1. Integration Tests
-   - Setup PostgreSQL
+   - Setup JDK 21 and H2 database
    - Run REST Assured tests
    - Validate all endpoints
 
@@ -469,17 +448,17 @@ See [tf-aws-infra](https://github.com/chs-cloudnative/tf-aws-infra) for infrastr
 2. Build AMI (Packer)
    - Launch Ubuntu 24.04
    - Install Java 21
-   - Copy JAR to /opt/productservice/
+   - Copy JAR /opt/productservice/
    - Setup SystemD service
    - Create custom AMI
 
 3. Update Infrastructure
-   - Create new Launch Template version
+   - Create new Launch Template
    - Trigger instance refresh
    - Wait for health checks
 ```
 
-**Result**: ✅ New version deployed (~10 min)
+**Result**: ✅ New version deployed (10 min)
 
 </td>
 </tr>
@@ -648,7 +627,7 @@ mvn jacoco:report
 
 <table>
 <tr>
-<td width="33%">
+<td>
 
 **✅ Positive Tests**
 - User registration
@@ -658,17 +637,17 @@ mvn jacoco:report
 - Health check
 
 </td>
-<td width="33%">
+<td>
 
 **❌ Negative Tests**
 - Invalid credentials
 - Duplicate email
 - Unauthorized access
 - Invalid input format
-- Missing required fields
+- Missing fields
 
 </td>
-<td width="33%">
+<td>
 
 **🔍 Edge Cases**
 - Empty strings
@@ -783,13 +762,6 @@ product-service/
 └── README.md
 ```
 
-## 🔗 Related Repositories
-
-| Repository | Description | Link |
-|------------|-------------|------|
-| **tf-aws-infra** | Terraform infrastructure (VPC, RDS, ALB, Auto-scaling) | [View](https://github.com/chs-cloudnative/tf-aws-infra) |
-| **serverless** | Lambda function for email verification | [View](https://github.com/chs-cloudnative/serverless) |
-
 ---
 
 ## 📈 Project Stats
@@ -808,27 +780,31 @@ product-service/
 
 ## 🎓 Skills Demonstrated
 
-<table>
+<table style="width: 100%;">
 <tr>
 <td width="50%" valign="top">
 
 ### ☁️ Cloud & DevOps
-- ✅ AWS multi-service integration (EC2, RDS, S3, SNS, Lambda)
+- ✅ AWS multi-service integration (EC2, RDS, S3, SNS ...) 
 - ✅ Infrastructure as Code (Packer for AMI automation)
 - ✅ CI/CD pipeline design (GitHub Actions)
 - ✅ Auto-scaling and high availability patterns
 - ✅ Zero-downtime deployment strategies
 - ✅ CloudWatch monitoring and custom metrics
 
+</td>
+<td width="50%" valign="top">
+  
 ### 🔐 Security & Best Practices
 - ✅ IAM roles and policies (least privilege)
 - ✅ Encryption at rest (KMS for RDS + S3)
 - ✅ Secrets management (AWS Secrets Manager)
 - ✅ Network isolation (VPC, private subnets)
 - ✅ BCrypt password hashing with salt
-- ✅ Token-based authentication (stateless)
+- ✅ Token-based authentication (stateless) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 
 </td>
+<tr>
 <td width="50%" valign="top">
 
 ### 💻 Backend Development
@@ -837,10 +813,13 @@ product-service/
 - ✅ JPA/Hibernate ORM with PostgreSQL
 - ✅ Event-driven architecture (SNS + Lambda)
 - ✅ File upload and storage (S3 integration)
-- ✅ Comprehensive error handling
+- ✅ Comprehensive error handling &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+</td>
+<td width="50%" valign="top">
 
 ### 🧪 Testing & Quality
-- ✅ Integration testing (REST Assured)
+- ✅ Integration testing (REST Assured) 
 - ✅ Unit testing (JUnit 5)
 - ✅ Test automation in CI pipeline
 - ✅ API testing with Postman
