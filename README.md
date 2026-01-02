@@ -7,7 +7,7 @@
 
 **Production-ready RESTful API with automated CI/CD, email verification, and cloud-native architecture**
 
-## 🔗 Related Repositories
+## 🔗 Related Repositories 
 
 | Repository | Description | Link |
 |------------|-------------|------|
